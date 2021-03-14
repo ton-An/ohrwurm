@@ -20,7 +20,7 @@ main() {
     sqlLocalDataSourceImpl = SqlLocalDataSourceImpl(db: mockDatabase);
   });
 
-  SqfliteDatabaseException tSqfliteDatabaseException =
+  DatabaseException tDatabaseException =
       SqfliteDatabaseException('message', 'result');
 
   group('close()', () {
@@ -34,10 +34,10 @@ main() {
     });
 
     test(
-        'should throw a [OhrwurmDatabaseException] if close call on db throws a [SqfliteDatabaseException]',
+        'should throw a [OhrwurmDatabaseException] if close call on db throws a [DatabaseException]',
         () {
       // arrange
-      when(mockDatabase.close()).thenThrow(tSqfliteDatabaseException);
+      when(mockDatabase.close()).thenThrow(tDatabaseException);
 
       // act
       final call = () => sqlLocalDataSourceImpl.close();
@@ -57,10 +57,10 @@ main() {
       verifyNoMoreInteractions(mockDatabase);
     });
     test(
-        'should throw a [OhrwurmDatabaseException] if insert call on db throws a [SqfliteDatabaseException]',
+        'should throw a [OhrwurmDatabaseException] if insert call on db throws a [DatabaseException]',
         () {
       // arrange
-      when(mockDatabase.insert(any, any)).thenThrow(tSqfliteDatabaseException);
+      when(mockDatabase.insert(any, any)).thenThrow(tDatabaseException);
 
       // act
       final call = () => sqlLocalDataSourceImpl.insert(tTable, tSongModelMap);
@@ -81,10 +81,10 @@ main() {
       verifyNoMoreInteractions(mockDatabase);
     });
     test(
-        'should throw a [OhrwurmDatabaseException] if delete call on db throws a [SqfliteDatabaseException]',
+        'should throw a [OhrwurmDatabaseException] if delete call on db throws a [DatabaseException]',
         () {
       // arrange
-      when(mockDatabase.delete(any)).thenThrow(tSqfliteDatabaseException);
+      when(mockDatabase.delete(any)).thenThrow(tDatabaseException);
 
       // act
       final call = () => sqlLocalDataSourceImpl.delete(tTable);
@@ -106,10 +106,10 @@ main() {
       verifyNoMoreInteractions(mockDatabase);
     });
     test(
-        'should throw a [OhrwurmDatabaseException] if update call on db throws a [SqfliteDatabaseException]',
+        'should throw a [OhrwurmDatabaseException] if update call on db throws a [DatabaseException]',
         () {
       // arrange
-      when(mockDatabase.update(any, any)).thenThrow(tSqfliteDatabaseException);
+      when(mockDatabase.update(any, any)).thenThrow(tDatabaseException);
 
       // act
       final call = () => sqlLocalDataSourceImpl.update(tTable, tSongModelMap);
@@ -157,10 +157,10 @@ main() {
       verifyNoMoreInteractions(mockDatabase);
     });
     test(
-        'should throw a [OhrwurmDatabaseException] if query call on db throws a [SqfliteDatabaseException]',
+        'should throw a [OhrwurmDatabaseException] if query call on db throws a [DatabaseException]',
         () {
       // arrange
-      when(mockDatabase.query(any)).thenThrow(tSqfliteDatabaseException);
+      when(mockDatabase.query(any)).thenThrow(tDatabaseException);
 
       // act
       final call = () => sqlLocalDataSourceImpl.query(tTable);

@@ -21,41 +21,86 @@ main() {
         ArtistRepositoryImpl(artistLocalDataSource: mockArtistLocalDataSource);
   });
 
-  group('getArtist()', () {
+  group('getArtistFromId()', () {
     test(
-        'should get an [ArtistModel] from the [ArtistLocalDataSource] and return it',
+        'should get an [ArtistModel] from the [ArtistLocalDataSource] for an ID and return it',
         () async {
       // arrange
-      when(mockArtistLocalDataSource.getArtist(tArtistId))
+      when(mockArtistLocalDataSource.getArtistFromId(tArtistId))
           .thenAnswer((realInvocation) => Future.value(tArtistModel));
 
       // act
-      final result = await artistRepositoryImpl.getArtist(tArtistId);
+      final result = await artistRepositoryImpl.getArtistFromId(tArtistId);
 
       // assert
       expect(result, Right(tArtist));
+      verify(mockArtistLocalDataSource.getArtistFromId(tArtistId));
+      verifyNoMoreInteractions(mockArtistLocalDataSource);
     });
 
     test('should return a [DatabaseFailure] on [DatabaseException]', () async {
       // arrange
-      when(mockArtistLocalDataSource.getArtist(any))
+      when(mockArtistLocalDataSource.getArtistFromId(any))
           .thenThrow(OhrwurmDatabaseException('Failure'));
 
       // act
-      final result = await artistRepositoryImpl.getArtist('1234');
+      final result = await artistRepositoryImpl.getArtistFromId('1234');
 
       // assert
-      expect(result, Left(DatabaseFaiure('Failure')));
+      expect(result, Left(DatabaseFailure('Failure')));
     });
 
     test('should return a [NotInDatabaseFailure] on [NotInDatabaseException]',
         () async {
       // arrange
-      when(mockArtistLocalDataSource.getArtist(any))
+      when(mockArtistLocalDataSource.getArtistFromId(any))
           .thenThrow(NotInDatabaseException('Failure'));
 
       // act
-      final result = await artistRepositoryImpl.getArtist('1234');
+      final result = await artistRepositoryImpl.getArtistFromId('1234');
+
+      // assert
+      expect(result, Left(NotInDatabaseFailure('Failure')));
+    });
+  });
+
+  group('getArtistFromName()', () {
+    test(
+        'should get an [ArtistModel] from the [ArtistLocalDataSource] for a name and return it',
+        () async {
+      // arrange
+      when(mockArtistLocalDataSource.getArtistFromName(tArtistName))
+          .thenAnswer((realInvocation) => Future.value(tArtistModel));
+
+      // act
+      final result = await artistRepositoryImpl.getArtistFromName(tArtistName);
+
+      // assert
+      expect(result, Right(tArtist));
+      verify(mockArtistLocalDataSource.getArtistFromName(tArtistName));
+      verifyNoMoreInteractions(mockArtistLocalDataSource);
+    });
+
+    test('should return a [DatabaseFailure] on [DatabaseException]', () async {
+      // arrange
+      when(mockArtistLocalDataSource.getArtistFromName(any))
+          .thenThrow(OhrwurmDatabaseException('Failure'));
+
+      // act
+      final result = await artistRepositoryImpl.getArtistFromName(tArtistName);
+
+      // assert
+      expect(result, Left(DatabaseFailure('Failure')));
+    });
+
+    test('should return a [NotInDatabaseFailure] on [NotInDatabaseException]',
+        () async {
+      // arrange
+      when(mockArtistLocalDataSource.getArtistFromName(any))
+          .thenThrow(NotInDatabaseException('Failure'));
+
+      // act
+      final result = await artistRepositoryImpl.getArtistFromName(tArtistName);
 
       // assert
       expect(result, Left(NotInDatabaseFailure('Failure')));
@@ -63,18 +108,17 @@ main() {
   });
 
   group('addArtist()', () {
-    test(
-        'should add an [Artist] using the [ArtistLocalDataSource] and return it\'s id',
-        () async {
+    test('should add an [Artist] using the [ArtistLocalDataSource]', () async {
       // arrange
       when(mockArtistLocalDataSource.addArtist(any))
           .thenAnswer((realInvocation) => Future.value(tArtistId));
 
       // act
-      final result = await artistRepositoryImpl.addArtist(tArtist);
+      await artistRepositoryImpl.addArtist(tArtist);
 
       // assert
-      expect(result, Right(tArtistId));
+      verify(mockArtistLocalDataSource.addArtist(tArtist));
+      verifyNoMoreInteractions(mockArtistLocalDataSource);
     });
 
     test('should return a [DatabaseFailure] on [DatabaseException]', () async {
@@ -86,7 +130,7 @@ main() {
       final result = await artistRepositoryImpl.addArtist(tArtist);
 
       // assert
-      expect(result, Left(DatabaseFaiure('Failure')));
+      expect(result, Left(DatabaseFailure('Failure')));
     });
   });
 }

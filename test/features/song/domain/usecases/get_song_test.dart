@@ -28,7 +28,7 @@ main() {
         .thenAnswer((realInvocation) => Future.value(Right(tSong)));
 
     // act
-    final result = await getSong(Params(songID: '1234'));
+    final result = await getSong(GetSongsParams(songID: '1234'));
 
     // assert
     expect(result, Right(tSong));

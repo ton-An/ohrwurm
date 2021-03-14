@@ -8,6 +8,7 @@ import 'package:ohrwurm/features/artist/data/models/artist_model.dart';
 import 'package:ohrwurm/features/song/data/models/song_model.dart';
 import 'package:ohrwurm/features/song/data/repositories_impl/song_repository_impl.dart';
 
+import '../../../../fixtures/artist_fixtures.dart';
 import '../../../../fixtures/song_fixtures.dart';
 
 class MockSongLocalDataSource extends Mock implements SongLocalDataSource {}
@@ -47,7 +48,7 @@ main() {
       final result = await songRepositoryImpl.getSong('1234');
 
       // assert
-      expect(result, Left(DatabaseFaiure('Failure')));
+      expect(result, Left(DatabaseFailure('Failure')));
     });
 
     test('should return a [NotInDatabaseFailure] on [NotInDatabaseException]',
@@ -75,7 +76,7 @@ main() {
       final result = await songRepositoryImpl.addSong(tSongModel);
 
       // assert
-      expect(result, Right(tSongId));
+      expect(result, Right(null));
       verify(mockSongLocalDataSource.addSong(tSongModel));
       verifyNoMoreInteractions(mockSongLocalDataSource);
     });
@@ -89,7 +90,32 @@ main() {
       final result = await songRepositoryImpl.addSong(tSong);
 
       // assert
-      expect(result, Left(DatabaseFaiure('Failure')));
+      expect(result, Left(DatabaseFailure('Failure')));
+    });
+  });
+  group('addToSongsArtistTable()', () {
+    test(
+        'should a song id and artist id to the SongsArtists table using the [SongLocalDataSource]',
+        () async {
+      // act
+      await songRepositoryImpl.addToSongsArtistTable(tSongId, tArtistId);
+
+      // assert
+      verify(mockSongLocalDataSource.addToSongsArtistTable(tSongId, tArtistId));
+      verifyNoMoreInteractions(mockSongLocalDataSource);
+    });
+
+    test('should return a [DatabaseFailure] on [DatabaseException]', () async {
+      // arrange
+      when(mockSongLocalDataSource.addToSongsArtistTable(any, any))
+          .thenThrow(OhrwurmDatabaseException('Failure'));
+
+      // act
+      final result =
+          await songRepositoryImpl.addToSongsArtistTable(tSongId, tArtistId);
+
+      // assert
+      expect(result, Left(DatabaseFailure('Failure')));
     });
   });
 }

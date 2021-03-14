@@ -1,7 +1,6 @@
 import 'package:ohrwurm/core/error/exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:meta/meta.dart';
-import 'package:sqflite/src/exception.dart';
 
 abstract class SqlLocalDataSource {
   /// Closes the database. After calling this method the db cannot be accessed anymore
@@ -63,42 +62,23 @@ class SqlLocalDataSourceImpl extends SqlLocalDataSource {
   SqlLocalDataSourceImpl({@required this.db}) : assert(db != null);
 
   @override
-  Future<void> close() async {
-    try {
-      await db.close();
-    } on SqfliteDatabaseException catch (e) {
-      throw OhrwurmDatabaseException(e.message);
-    }
-  }
+  Future<void> close() async => _tryCatch(() async => await db.close());
 
   @override
-  Future<void> insert(String table, Map<String, Object> values) async {
-    try {
-      await db.insert(table, values);
-    } on SqfliteDatabaseException catch (e) {
-      throw OhrwurmDatabaseException(e.message);
-    }
-  }
+  Future<void> insert(String table, Map<String, Object> values) async =>
+      _tryCatch(() async => await db.insert(table, values));
 
   @override
   Future<void> delete(String table,
-      {String where, List<Object> whereArgs}) async {
-    try {
-      await db.delete(table, where: where, whereArgs: whereArgs);
-    } on SqfliteDatabaseException catch (e) {
-      throw OhrwurmDatabaseException(e.message);
-    }
-  }
+          {String where, List<Object> whereArgs}) async =>
+      await _tryCatch(() async =>
+          await db.delete(table, where: where, whereArgs: whereArgs));
 
   @override
   Future<void> update(String table, Map<String, Object> values,
-      {String where, List<Object> whereArgs}) async {
-    try {
-      await db.update(table, values, where: where, whereArgs: whereArgs);
-    } on SqfliteDatabaseException catch (e) {
-      throw OhrwurmDatabaseException(e.message);
-    }
-  }
+          {String where, List<Object> whereArgs}) async =>
+      await _tryCatch(() async =>
+          await db.update(table, values, where: where, whereArgs: whereArgs));
 
   @override
   Future<List<Map<String, Object>>> query(
@@ -109,19 +89,24 @@ class SqlLocalDataSourceImpl extends SqlLocalDataSource {
     String orderBy,
     int limit,
     int offset,
-  }) async {
-    try {
-      return await db.query(
-        table,
-        where: where,
-        whereArgs: whereArgs,
-        columns: columns,
-        orderBy: orderBy,
-        limit: limit,
-        offset: offset,
+  }) async =>
+      await _tryCatch(
+        () async => await db.query(
+          table,
+          where: where,
+          whereArgs: whereArgs,
+          columns: columns,
+          orderBy: orderBy,
+          limit: limit,
+          offset: offset,
+        ),
       );
-    } on SqfliteDatabaseException catch (e) {
-      throw OhrwurmDatabaseException(e.message);
+
+  Future _tryCatch(Function() function) async {
+    try {
+      return await function();
+    } on DatabaseException catch (e) {
+      throw OhrwurmDatabaseException(e.toString());
     }
   }
 }

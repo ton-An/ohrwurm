@@ -23,7 +23,12 @@ abstract class SongLocalDataSource {
   /// Adds a [Song] to the Songs table in the SQL database
   ///
   /// Throws a [OhrwurmDatabaseException] if the database can't be accessed
-  Future<String> addSong(SongModel song);
+  Future<void> addSong(SongModel song);
+
+  /// Adds a song and it's artist to the SongsArtists table in the SQL database
+  ///
+  /// Throws a [OhrwurmDatabaseException] if the database can't be accessed
+  Future<void> addToSongsArtistTable(String songId, String artistId);
 }
 
 class SongLocalDataSourceImpl extends SongLocalDataSource {
@@ -59,9 +64,9 @@ class SongLocalDataSourceImpl extends SongLocalDataSource {
       List<Map<String, Object>> artistMaps = [];
 
       for (Map<String, Object> songsArtist in songsArtistsList) {
-        Map<String, Object> artist =
-            (await artistLocalDataSource.getArtist(songsArtist['artistId']))
-                .toMap();
+        Map<String, Object> artist = (await artistLocalDataSource
+                .getArtistFromId(songsArtist['artistId']))
+            .toMap();
         artistMaps.add(artist);
       }
 
@@ -74,29 +79,17 @@ class SongLocalDataSourceImpl extends SongLocalDataSource {
   }
 
   @override
-  Future<String> addSong(SongModel song) async {
+  Future<void> addSong(SongModel song) async {
     Map<String, dynamic> songMapWithoutArtists = song.toMap();
     songMapWithoutArtists.remove('artists');
+    await sqlLocalDataSource.insert(SONG_TABLE, songMapWithoutArtists);
+  }
 
-    final String songId = idGenerator();
-
-    try {
-      await getSong(songId);
-      return addSong(song);
-    } on NotInDatabaseException {
-      songMapWithoutArtists.update('id', (value) => songId);
-
-      await sqlLocalDataSource.insert(SONG_TABLE, songMapWithoutArtists);
-
-      List<Artist> artistList = song.artists;
-
-      for (Artist artist in artistList) {
-        String artistId = await artistLocalDataSource.addArtist(artist);
-
-        await sqlLocalDataSource.insert(
-            SONGS_ARTISTS_TABLE, {'artistId': artistId, 'songId': song.id});
-      }
-    }
-    return songId;
+  @override
+  Future<void> addToSongsArtistTable(String songId, String artistId) async {
+    await sqlLocalDataSource.insert(SONGS_ARTISTS_TABLE, {
+      'songId': songId,
+      'artistId': artistId,
+    });
   }
 }

@@ -15,18 +15,30 @@ class SongRepositoryImpl extends SongRepository {
     try {
       return Right(await songLocalDataSource.getSong(songID));
     } on OhrwurmDatabaseException catch (exception) {
-      return Left(DatabaseFaiure(exception.message));
+      return Left(DatabaseFailure(exception.message));
     } on NotInDatabaseException catch (exception) {
       return Left(NotInDatabaseFailure(exception.message));
     }
   }
 
   @override
-  Future<Either<Failure, String>> addSong(Song song) async {
+  Future<Either<Failure, void>> addSong(Song song) async {
     try {
-      return Right(await songLocalDataSource.addSong(song));
+      await songLocalDataSource.addSong(song);
+      return Right(null);
     } on OhrwurmDatabaseException catch (e) {
-      return Left(DatabaseFaiure(e.message));
+      return Left(DatabaseFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> addToSongsArtistTable(
+      String songId, String artistId) async {
+    try {
+      await songLocalDataSource.addToSongsArtistTable(songId, artistId);
+      return Right(null);
+    } on OhrwurmDatabaseException catch (e) {
+      return Left(DatabaseFailure(e.message));
     }
   }
 }

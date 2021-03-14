@@ -1,3 +1,5 @@
+import 'package:ohrwurm/core/constants.dart';
+import 'package:ohrwurm/core/error/failures.dart';
 import 'package:ohrwurm/features/artist/data/models/artist_model.dart';
 import 'package:ohrwurm/features/artist/domain/entities/artist.dart';
 
@@ -12,3 +14,11 @@ final List<ArtistModel> tArtistModelList = [
 ];
 
 final String tArtistName = 'Abstract';
+
+final ArtistAlreadyExistsFailure tArtistAlreadyExistsFailure =
+    ArtistAlreadyExistsFailure(
+  message: ARTIST_ALREADY_EXISTS_MESSAGE,
+  artist: tArtist,
+);
+
+final NotInDatabaseFailure tNotInDatabaseFailure = NotInDatabaseFailure('');

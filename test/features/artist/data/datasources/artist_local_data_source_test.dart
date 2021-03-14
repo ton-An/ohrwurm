@@ -38,7 +38,7 @@ main() {
       getArtistSuccessfulSqlQuery();
 
       // act
-      await artistLocalDataSourceImpl.getArtist(tArtistId);
+      await artistLocalDataSourceImpl.getArtistFromId(tArtistId);
 
       // assert
       verify(mockSqlLocalDataSource.query(ARTISTS_TABLE,
@@ -51,7 +51,7 @@ main() {
       getArtistSuccessfulSqlQuery();
 
       // act
-      final result = await artistLocalDataSourceImpl.getArtist(tArtistId);
+      final result = await artistLocalDataSourceImpl.getArtistFromId(tArtistId);
 
       // assert
       expect(result, tArtistModel);
@@ -66,64 +66,19 @@ main() {
           .thenAnswer((realInvocation) => Future.value([]));
 
       // act
-      final call = () => artistLocalDataSourceImpl.getArtist(tArtistId);
+      final call = () => artistLocalDataSourceImpl.getArtistFromId(tArtistId);
 
       // assert
       expect(call(), throwsA(isA<NotInDatabaseException>()));
     });
   });
   group('addArtist()', () {
-    setUp(() {
-      when(mockSqlLocalDataSource.query(any,
-              where: anyNamed('where'), whereArgs: anyNamed('whereArgs')))
-          .thenAnswer((realInvocation) => Future.value([]));
-    });
-    test('should check if artist name already exists', () async {
+    test('should insert an artist map into the Artists table', () async {
       // act
       await artistLocalDataSourceImpl.addArtist(tArtistModel);
 
       // assert
-      verify(mockSqlLocalDataSource.query(ARTISTS_TABLE,
-          where: '$ID_COLUMN=?', whereArgs: [tArtistName]));
-    });
-
-    group('if artist doesn\'t exist', () {
-      setUp(() {
-        when(mockIdGenerator()).thenReturn(tArtistId);
-      });
-      test('should generate an id for the artist', () async {
-        // act
-        await artistLocalDataSourceImpl.addArtist(tArtistModel);
-
-        // assert
-        verify(mockIdGenerator());
-      });
-      test(
-          'should insert an artist map into the Artists table in the db if id doesn\'nt exist yet',
-          () async {
-        // act
-        await artistLocalDataSourceImpl.addArtist(tArtistModel);
-
-        // assert
-        verify(mockSqlLocalDataSource.insert(ARTISTS_TABLE, tArtistModelMap));
-      });
-    });
-
-    group('if artist already exists', () {
-      test('return the artists id', () async {
-        // arrange
-        when(mockSqlLocalDataSource.query(ARTISTS_TABLE,
-                where: '$ID_COLUMN=?', whereArgs: [tArtistName]))
-            .thenAnswer((realInvocation) => Future.value([tArtistModelMap]));
-
-        // act
-        final result = await artistLocalDataSourceImpl.addArtist(tArtistModel);
-
-        // assert
-        expect(result, tArtistId);
-        verify(mockSqlLocalDataSource.query(ARTISTS_TABLE,
-            where: '$ID_COLUMN=?', whereArgs: [tArtistName]));
-      });
+      verify(mockSqlLocalDataSource.insert(ARTISTS_TABLE, tArtistModelMap));
     });
   });
 }

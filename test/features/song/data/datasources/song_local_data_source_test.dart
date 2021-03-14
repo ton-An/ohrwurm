@@ -85,8 +85,8 @@ main() {
         await songLocalDataSourceImpl.getSong(tSongId);
 
         // assert
-        verify(mockArtistLocalDataSource.getArtist(tArtistId));
-        verify(mockArtistLocalDataSource.getArtist('4321'));
+        verify(mockArtistLocalDataSource.getArtistFromId(tArtistId));
+        verify(mockArtistLocalDataSource.getArtistFromId('4321'));
         verifyNoMoreInteractions(mockArtistLocalDataSource);
       });
 
@@ -156,26 +156,6 @@ main() {
     Map<String, Object> tSongMapWithoutArtists = tSongModel.toMap();
     tSongMapWithoutArtists.remove('artists');
 
-    setUp(() {
-      getSongSuccessfulSongQuery();
-      when(mockSqlLocalDataSource.query(
-        any,
-        where: anyNamed('where'),
-        whereArgs: anyNamed('whereArgs'),
-      )).thenAnswer((realInvocation) => Future.value([]));
-
-      when(mockIdGenerator()).thenReturn(tSongId);
-      when(mockArtistLocalDataSource.addArtist(tArtistModel))
-          .thenAnswer((realInvocation) => Future.value(tArtistId));
-    });
-    test('should generate a song id using the [IdGenerator]', () async {
-      // act
-      await songLocalDataSourceImpl.addSong(tSong);
-
-      // assert
-      verify(mockIdGenerator());
-      verifyNoMoreInteractions(mockIdGenerator);
-    });
     test(
         'should insert the song model map (without artists) into the songs table',
         () async {
@@ -185,33 +165,16 @@ main() {
       // assert
       verify(mockSqlLocalDataSource.insert(SONG_TABLE, tSongMapWithoutArtists));
     });
-
-    test('should add artist', () async {
-      // act
-      await songLocalDataSourceImpl.addSong(tSong);
-
-      // assert
-      verify(mockArtistLocalDataSource.addArtist(tArtistModel));
-    });
-
-    test('should add song and it\'s artists to the SongsArtists table',
+  });
+  group('addToSongsArtistTable()', () {
+    test(
+        'should insert the song model map (without artists) into the songs table',
         () async {
       // act
-      await songLocalDataSourceImpl.addSong(tSong);
+      await songLocalDataSourceImpl.addToSongsArtistTable(tSongId, tArtistId);
 
       // assert
-      verify(mockSqlLocalDataSource.insert(
-          SONGS_ARTISTS_TABLE, tSongsArtistsList[0]));
-      verify(mockSqlLocalDataSource.insert(
-          SONGS_ARTISTS_TABLE, tSongsArtistsList[1]));
-    });
-
-    test('should return the songId', () async {
-      // act
-      final result = await songLocalDataSourceImpl.addSong(tSong);
-
-      // assert
-      expect(result, tSongId);
+      verify(mockSqlLocalDataSource.insert(SONGS_ARTISTS_TABLE, tSongsArtist));
     });
   });
 }

@@ -53,6 +53,9 @@ class SongModel extends Song {
     );
   }
 
+  /// Converts a [SonModel] to a Map
+  ///
+  /// Excludes artists if property is null
   Map<String, dynamic> toMap() {
     return {
       'id': super.id,
@@ -61,10 +64,6 @@ class SongModel extends Song {
           .artists
           .map((Artist artist) => {'id': artist.id, 'name': artist.name})
           .toList(),
-      // [
-      //   {'id': '12', 'name': 'Abstract'},
-      //   {'id': '123', 'name': 'RoZe'}
-      // ],
       'authorName': super.authorName,
       'writerName': super.writerName,
       'albumName': super.albumName,

@@ -5,7 +5,6 @@ import 'package:ohrwurm/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
 import 'package:ohrwurm/features/artist/domain/repositories/artist_repository.dart';
 import 'package:meta/meta.dart';
-import 'package:sqflite/sqflite.dart';
 
 class ArtistRepositoryImpl extends ArtistRepository {
   final ArtistLocalDataSource artistLocalDataSource;
@@ -13,20 +12,32 @@ class ArtistRepositoryImpl extends ArtistRepository {
   ArtistRepositoryImpl({@required this.artistLocalDataSource});
 
   @override
-  Future<Either<Failure, String>> addArtist(Artist artist) async {
+  Future<Either<Failure, void>> addArtist(Artist artist) async {
     try {
-      return Right(await artistLocalDataSource.addArtist(artist));
+      await artistLocalDataSource.addArtist(artist);
+      return Right(null);
     } on OhrwurmDatabaseException catch (e) {
-      return Left(DatabaseFaiure(e.message));
+      return Left(DatabaseFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, Artist>> getArtist(String artistId) async {
+  Future<Either<Failure, Artist>> getArtistFromId(String artistId) async {
     try {
-      return Right(await artistLocalDataSource.getArtist(artistId));
+      return Right(await artistLocalDataSource.getArtistFromId(artistId));
     } on OhrwurmDatabaseException catch (e) {
-      return Left(DatabaseFaiure(e.message));
+      return Left(DatabaseFailure(e.message));
+    } on NotInDatabaseException catch (e) {
+      return Left(NotInDatabaseFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Artist>> getArtistFromName(String artistName) async {
+    try {
+      return Right(await artistLocalDataSource.getArtistFromName(artistName));
+    } on OhrwurmDatabaseException catch (e) {
+      return Left(DatabaseFailure(e.message));
     } on NotInDatabaseException catch (e) {
       return Left(NotInDatabaseFailure(e.message));
     }

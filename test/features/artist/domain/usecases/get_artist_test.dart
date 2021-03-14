@@ -19,15 +19,15 @@ main() {
 
   test('should get an [Artist] from the [ArtistRepository]', () async {
     // arrange
-    when(mockArtistRepository.getArtist(any))
+    when(mockArtistRepository.getArtistFromId(any))
         .thenAnswer((realInvocation) => Future.value(Right(tArtist)));
 
     // act
-    final result = await getArtist(Params(artistId: tArtistId));
+    final result = await getArtist(GetArtistParams(artistId: tArtistId));
 
     // assert
     expect(result, Right(tArtist));
-    verify(mockArtistRepository.getArtist(tArtistId));
+    verify(mockArtistRepository.getArtistFromId(tArtistId));
     verifyNoMoreInteractions(mockArtistRepository);
   });
 }
