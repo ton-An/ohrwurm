@@ -44,12 +44,13 @@ class AddArtist extends UseCase<String, AddArtistParams> {
             }
           }, (r) => call(params));
         } else {
+          print(l.message);
           return Left(l);
         }
       },
       (r) => Left(
         ArtistAlreadyExistsFailure(
-            message: ARTIST_ALREADY_EXISTS_MESSAGE, artist: r),
+            message: ARTIST_ALREADY_EXISTS_MESSAGE, artistId: r.id),
       ),
     );
   }

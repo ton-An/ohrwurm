@@ -15,7 +15,6 @@ main() {
     test('should convert a song map to [SongModel] object', () {
       // act
       final result = SongModel.fromMap(tSongModelMap);
-      print(result);
       // assert
       expect(result, tSongModel);
     });

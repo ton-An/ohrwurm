@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:ohrwurm/core/error/exceptions.dart';
 import 'package:ohrwurm/features/song/data/datasources/song_local_data_source.dart';
+import 'package:ohrwurm/features/song/data/models/song_meta_data_model.dart';
 import 'package:ohrwurm/features/song/domain/entities/song.dart';
 import 'package:ohrwurm/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
+import 'package:ohrwurm/features/song/domain/entities/song_meta_data.dart';
 import 'package:ohrwurm/features/song/domain/repositories/song_repository.dart';
 import 'package:meta/meta.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SongRepositoryImpl extends SongRepository {
   final SongLocalDataSource songLocalDataSource;
@@ -39,6 +44,39 @@ class SongRepositoryImpl extends SongRepository {
       return Right(null);
     } on OhrwurmDatabaseException catch (e) {
       return Left(DatabaseFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SongMetaData>> getSongMetaData(File songFile) async {
+    try {
+      return Right(await songLocalDataSource.getSongMetaData(songFile));
+    } on FileDoesNotExistException catch (e) {
+      return Left(FileDoesNotExistFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<String>>> getSongIdList(int page) async {
+    try {
+      return Right(await songLocalDataSource.getSongIdList(page));
+    } on OhrwurmDatabaseException catch (e) {
+      return Left(DatabaseFailure(e.message));
+    } on NoMoreResultsException catch (e) {
+      return Left(NoMoreResultsFailure(e.message));
+    } on NoResultsException catch (e) {
+      return Left(NoResultsFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Song>> getSongFromFilePath(String filePath) async {
+    try {
+      return Right(await songLocalDataSource.getSongFromFilePath(filePath));
+    } on OhrwurmDatabaseException catch (e) {
+      return Left(DatabaseFailure(e.message));
+    } on NotInDatabaseException catch (e) {
+      return Left(NotInDatabaseFailure(e.message));
     }
   }
 }

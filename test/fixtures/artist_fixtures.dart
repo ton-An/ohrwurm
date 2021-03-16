@@ -18,7 +18,7 @@ final String tArtistName = 'Abstract';
 final ArtistAlreadyExistsFailure tArtistAlreadyExistsFailure =
     ArtistAlreadyExistsFailure(
   message: ARTIST_ALREADY_EXISTS_MESSAGE,
-  artist: tArtist,
+  artistId: tArtistId,
 );
 
 final NotInDatabaseFailure tNotInDatabaseFailure = NotInDatabaseFailure('');

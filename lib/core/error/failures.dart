@@ -25,7 +25,26 @@ class NotInDatabaseFailure extends Failure {
 }
 
 class ArtistAlreadyExistsFailure extends Failure {
-  final Artist artist;
-  ArtistAlreadyExistsFailure({@required String message, @required this.artist})
+  final String artistId;
+  ArtistAlreadyExistsFailure(
+      {@required String message, @required this.artistId})
       : super(message);
+}
+
+class SongAlreadyExistsFailure extends Failure {
+  final String songId;
+  SongAlreadyExistsFailure({@required String message, @required this.songId})
+      : super(message);
+}
+
+class FileDoesNotExistFailure extends Failure {
+  FileDoesNotExistFailure(String message) : super(message);
+}
+
+class NoMoreResultsFailure extends Failure {
+  NoMoreResultsFailure(String message) : super(message);
+}
+
+class NoResultsFailure extends Failure {
+  NoResultsFailure(String message) : super(message);
 }

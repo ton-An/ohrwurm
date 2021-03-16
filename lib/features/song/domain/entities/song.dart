@@ -10,7 +10,7 @@ abstract class Song extends Equatable {
   final String writerName;
   final String albumName;
   final String genre;
-  final String year;
+  final int year;
   final Duration trackDuration;
   final String songFilePath;
   final String coverArtPath;

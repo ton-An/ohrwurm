@@ -39,7 +39,8 @@ main() {
       verifyNoMoreInteractions(mockSongLocalDataSource);
     });
 
-    test('should return a [DatabaseFailure] on [DatabaseException]', () async {
+    test('should return a [DatabaseFailure] on [OhrwurmDatabaseException]',
+        () async {
       // arrange
       when(mockSongLocalDataSource.getSong(any))
           .thenThrow(OhrwurmDatabaseException('Failure'));
@@ -81,7 +82,8 @@ main() {
       verifyNoMoreInteractions(mockSongLocalDataSource);
     });
 
-    test('should return a [DatabaseFailure] on [DatabaseException]', () async {
+    test('should return a [DatabaseFailure] on [OhrwurmDatabaseException]',
+        () async {
       // arrange
       when(mockSongLocalDataSource.addSong(any))
           .thenThrow(OhrwurmDatabaseException('Failure'));
@@ -105,7 +107,8 @@ main() {
       verifyNoMoreInteractions(mockSongLocalDataSource);
     });
 
-    test('should return a [DatabaseFailure] on [DatabaseException]', () async {
+    test('should return a [DatabaseFailure] on [OhrwurmDatabaseException]',
+        () async {
       // arrange
       when(mockSongLocalDataSource.addToSongsArtistTable(any, any))
           .thenThrow(OhrwurmDatabaseException('Failure'));
@@ -116,6 +119,134 @@ main() {
 
       // assert
       expect(result, Left(DatabaseFailure('Failure')));
+    });
+  });
+
+  group('getSongMetaData()', () {
+    test('should get a [SongMetaData] entity from the [SongLocalDataSource]',
+        () async {
+      when(mockSongLocalDataSource.getSongMetaData(any))
+          .thenAnswer((realInvocation) => Future.value(tSongMetaDataModel));
+
+      // act
+      final result = await songRepositoryImpl.getSongMetaData(tSongFile);
+
+      // assert
+      expect(result, Right(tSongMetaDataModel));
+      verify(mockSongLocalDataSource.getSongMetaData(tSongFile));
+      verifyNoMoreInteractions(mockSongLocalDataSource);
+    });
+
+    test(
+        'should return a [FileDoesNotExistFailure] on [FileDoesNotExistException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongMetaData(any))
+          .thenThrow(FileDoesNotExistException(''));
+
+      // act
+      final result = await songRepositoryImpl.getSongMetaData(tSongFile);
+
+      // assert
+      expect(result, Left(FileDoesNotExistFailure('')));
+    });
+  });
+  group('getSongIdList()', () {
+    test('should get a a List of song ids from the [SongLocalDataSource]',
+        () async {
+      when(mockSongLocalDataSource.getSongIdList(any))
+          .thenAnswer((realInvocation) => Future.value(tSongIdList));
+      // act
+      final result = await songRepositoryImpl.getSongIdList(tSongPage);
+
+      // assert
+      expect(result, Right(tSongIdList));
+      verify(mockSongLocalDataSource.getSongIdList(tSongPage));
+      verifyNoMoreInteractions(mockSongLocalDataSource);
+    });
+
+    test('should return a [DatabaseFailure] on [OhrwurmDatabaseException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongIdList(any))
+          .thenThrow(OhrwurmDatabaseException(''));
+
+      // act
+      final result = await songRepositoryImpl.getSongIdList(tSongPage);
+
+      // assert
+      expect(result, Left(DatabaseFailure('')));
+    });
+    test('should return a [NoMoreResultsFailure] on [NoMoreResultsException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongIdList(any))
+          .thenThrow(NoMoreResultsException(''));
+
+      // act
+      final result = await songRepositoryImpl.getSongIdList(tSongPage);
+
+      // assert
+      expect(result, Left(NoMoreResultsFailure('')));
+    });
+    test('should return a [NoResultsFailure] on [NoResultsException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongIdList(any))
+          .thenThrow(NoResultsException(''));
+
+      // act
+      final result = await songRepositoryImpl.getSongIdList(tSongPage);
+
+      // assert
+      expect(result, Left(NoResultsFailure('')));
+    });
+  });
+
+  group('getSongFromFilePath()', () {
+    test(
+        'should get a [SongModel], for a filePath, from [SongLocalDataSource] and return it',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongFromFilePath(any))
+          .thenAnswer((realInvocation) => Future.value(tSongModel));
+
+      // act
+      final result =
+          await songRepositoryImpl.getSongFromFilePath(tSongFile.path);
+
+      // assert
+      expect(result, Right(tSongModel));
+      verify(mockSongLocalDataSource.getSongFromFilePath(tSongFile.path));
+      verifyNoMoreInteractions(mockSongLocalDataSource);
+    });
+
+    test('should return a [DatabaseFailure] on [OhrwurmDatabaseException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongFromFilePath(any))
+          .thenThrow(OhrwurmDatabaseException('Failure'));
+
+      // act
+      final result =
+          await songRepositoryImpl.getSongFromFilePath(tSongFile.path);
+
+      // assert
+      expect(result, Left(DatabaseFailure('Failure')));
+    });
+
+    test('should return a [NotInDatabaseFailure] on [NotInDatabaseException]',
+        () async {
+      // arrange
+      when(mockSongLocalDataSource.getSongFromFilePath(any))
+          .thenThrow(NotInDatabaseException('Failure'));
+
+      // act
+      final result =
+          await songRepositoryImpl.getSongFromFilePath(tSongFile.path);
+
+      // assert
+      expect(result, Left(NotInDatabaseFailure('Failure')));
     });
   });
 }

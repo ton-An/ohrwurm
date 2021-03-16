@@ -8,6 +8,7 @@ import 'package:ohrwurm/features/sql/data/datasources/sql_local_data_source.dart
 import 'package:uuid/uuid.dart';
 
 import '../../../../fixtures/artist_fixtures.dart';
+import '../../../../fixtures/song_fixtures.dart';
 
 class MockSqlLocalDataSource extends Mock implements SqlLocalDataSource {}
 
@@ -41,8 +42,8 @@ main() {
       await artistLocalDataSourceImpl.getArtistFromId(tArtistId);
 
       // assert
-      verify(mockSqlLocalDataSource.query(ARTISTS_TABLE,
-          where: '$ARTISTS_TABLE=?', whereArgs: [tArtistId]));
+      verify(mockSqlLocalDataSource
+          .query(ARTISTS_TABLE, where: '$ID_COLUMN=?', whereArgs: [tArtistId]));
       verifyNoMoreInteractions(mockSqlLocalDataSource);
     });
 

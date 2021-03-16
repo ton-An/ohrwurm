@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:ohrwurm/core/error/failures.dart';
 import 'package:ohrwurm/core/usecases/usecase.dart';
+import 'package:ohrwurm/core/utils/app_paths.dart';
 import 'package:ohrwurm/core/utils/id_generator.dart';
 import 'package:ohrwurm/features/artist/domain/entities/artist.dart';
 import 'package:ohrwurm/features/artist/domain/usecases/add_artist.dart';
+import 'package:ohrwurm/features/song/data/models/song_meta_data_model.dart';
 import 'package:ohrwurm/features/song/data/models/song_model.dart';
 import 'package:ohrwurm/features/song/domain/entities/song.dart';
 import 'package:meta/meta.dart';
+import 'package:ohrwurm/features/song/domain/entities/song_meta_data.dart';
 import 'package:ohrwurm/features/song/domain/repositories/song_repository.dart';
 import 'package:ohrwurm/features/song/domain/usecases/get_song.dart';
 
@@ -16,12 +21,14 @@ class AddSong extends UseCase<void, AddSongParams> {
   final GetSong getSong;
   final AddArtist addArtist;
   final IdGenerator idGenerator;
+  final AppPaths appPaths;
 
   AddSong({
     @required this.songRepository,
     @required this.getSong,
     @required this.addArtist,
     @required this.idGenerator,
+    @required this.appPaths,
   })  : assert(songRepository != null),
         assert(getSong != null),
         assert(addArtist != null),
@@ -29,56 +36,101 @@ class AddSong extends UseCase<void, AddSongParams> {
 
   @override
   Future<Either<Failure, void>> call(AddSongParams params) async {
-    final String id = idGenerator();
-    final Either<Failure, Song> doesSongIdExistEither =
-        await getSong(GetSongsParams(songID: id));
+    Either<Failure, Song> getSongFromFilePathEither =
+        await songRepository.getSongFromFilePath(params.songFile.path);
 
-    return doesSongIdExistEither.fold((l) async {
+    return getSongFromFilePathEither.fold((l) async {
       if (l is NotInDatabaseFailure) {
-        final Either<Failure, void> addSongEither =
-            await songRepository.addSong(
-          SongModel(
-            id: id,
-            title: params.song.title,
-            artists: null,
-            authorName: params.song.authorName,
-            writerName: params.song.writerName,
-            albumName: params.song.albumName,
-            genre: params.song.genre,
-            year: params.song.year,
-            trackDuration: params.song.trackDuration,
-            songFilePath: params.song.songFilePath,
-            coverArtPath: params.song.coverArtPath,
-          ),
-        );
+        Either<Failure, SongMetaData> songMetaDataEither =
+            await songRepository.getSongMetaData(params.songFile);
+        return songMetaDataEither.fold((l) {
+          print('AddSong - $l');
+          return Left(l);
+        }, (r) async {
+          SongMetaDataModel songMetaDataModel = r;
+          print(params.songFile.path);
+          print(songMetaDataModel);
+          final String id = idGenerator();
+          final Either<Failure, Song> doesSongIdExistEither =
+              await getSong(GetSongParams(songID: id));
 
-        return addSongEither.fold((l) => Left(l), (r) async {
-          for (Artist artist in params.song.artists) {
-            final addArtistEither =
-                await addArtist(AddArtistParams(artistName: artist.name));
+          return doesSongIdExistEither.fold((l) async {
+            if (l is NotInDatabaseFailure) {
+              String appDirectoryPath =
+                  await appPaths.getAppDocumentsDirectoryPath();
 
-            if (addArtistEither.isLeft()) return addArtistEither;
-            await songRepository.addToSongsArtistTable(
-                id, addArtistEither.getOrElse(() => null));
-          }
+              if (!await Directory('$appDirectoryPath/coverArt/').exists()) {
+                Directory('$appDirectoryPath/coverArt/').create();
+              }
+              String coverArtPath = '$appDirectoryPath/coverArt/$id.jpg';
+              (await File(coverArtPath).create())
+                  .writeAsBytesSync(songMetaDataModel.coverArt);
 
-          return Right(id);
+              final Either<Failure, void> addSongEither =
+                  await songRepository.addSong(
+                SongModel(
+                  id: id,
+                  title: songMetaDataModel.title,
+                  artists: null,
+                  authorName: songMetaDataModel.authorName,
+                  writerName: songMetaDataModel.writerName,
+                  albumName: songMetaDataModel.albumName,
+                  genre: songMetaDataModel.genre,
+                  year: songMetaDataModel.year,
+                  trackDuration:
+                      Duration(seconds: songMetaDataModel.trackDuration),
+                  songFilePath: params.songFile.path,
+                  coverArtPath: coverArtPath,
+                ),
+              );
+
+              return addSongEither.fold((l) => Left(l), (r) async {
+                print(4);
+
+                for (String artistName in songMetaDataModel.artists) {
+                  print(artistName);
+                  final addArtistEither =
+                      await addArtist(AddArtistParams(artistName: artistName));
+                  print(addArtistEither);
+                  // if (addArtistEither.isLeft()) return addArtistEither;
+                  bool failed = false;
+                  addArtistEither.fold((l) async {
+                    if (l is ArtistAlreadyExistsFailure)
+                      await songRepository.addToSongsArtistTable(
+                          id, l.artistId);
+                    else
+                      failed = true;
+                  }, (r) async {
+                    print(r);
+                    await songRepository.addToSongsArtistTable(id, r);
+                  });
+
+                  if (failed == true) return addArtistEither;
+                }
+                print('message ${l.message}');
+
+                return Right(id);
+              });
+            } else {
+              print('message ${l.message}');
+              return Left(l);
+            }
+          }, (r) => call(params));
         });
       } else {
         return Left(l);
       }
-    }, (r) => call(params));
-    // songRepository.addSong(params.song);
+    }, (r) => Left(SongAlreadyExistsFailure(message: '421', songId: r.id)));
   }
 }
 
 class AddSongParams extends Equatable {
-  final Song song;
+  final File songFile;
 
-  AddSongParams({@required this.song}) : assert(song != null);
+  AddSongParams({@required this.songFile}) : assert(songFile != null);
 
   @override
-  List<Object> get props => [song];
+  List<Object> get props => [songFile];
 }
 
   // should generate a song id using the [IdGenerator]

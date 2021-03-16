@@ -4,19 +4,18 @@ import 'package:ohrwurm/features/song/domain/entities/song.dart';
 
 class SongModel extends Song {
   SongModel({
-    id,
-    title,
-    artists,
-    authorName,
-    writerName,
-    albumName,
-    genre,
-    year,
-    trackDuration,
-    songFilePath,
-    coverArtPath,
-  })  : assert(id != null),
-        assert(title != null),
+    String id,
+    String title,
+    List<Artist> artists,
+    String authorName,
+    String writerName,
+    String albumName,
+    String genre,
+    int year,
+    Duration trackDuration,
+    String songFilePath,
+    String coverArtPath,
+  })  : assert(title != null),
         assert(songFilePath != null),
         super(
           id: id,
@@ -32,6 +31,7 @@ class SongModel extends Song {
           coverArtPath: coverArtPath,
         );
 
+  /// Converts a Map to a [SongModel]
   factory SongModel.fromMap(Map<String, dynamic> songMap) {
     List<ArtistModel> artists = songMap['artists']
         .map<ArtistModel>(
@@ -40,7 +40,7 @@ class SongModel extends Song {
 
     return SongModel(
       id: songMap['id'],
-      title: songMap['title'],
+      title: songMap['title'].toString(),
       artists: artists,
       authorName: songMap['authorName'],
       writerName: songMap['writerName'],
@@ -53,17 +53,19 @@ class SongModel extends Song {
     );
   }
 
-  /// Converts a [SonModel] to a Map
-  ///
-  /// Excludes artists if property is null
+  /// Converts a [SongModel] to a Map
   Map<String, dynamic> toMap() {
+    print(super.albumName);
+
     return {
       'id': super.id,
       'title': super.title,
-      'artists': super
-          .artists
-          .map((Artist artist) => {'id': artist.id, 'name': artist.name})
-          .toList(),
+      'artists': super.artists == null
+          ? null
+          : super
+              .artists
+              .map((Artist artist) => {'id': artist.id, 'name': artist.name})
+              .toList(),
       'authorName': super.authorName,
       'writerName': super.writerName,
       'albumName': super.albumName,
