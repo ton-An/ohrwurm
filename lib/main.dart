@@ -24,13 +24,15 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         fontFamily: 'Manrope',
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.black,
+        accentColor: Color(0xFFA7B0D0),
         canvasColor: Colors.white,
+        shadowColor: Colors.black.withOpacity(.7),
         primaryTextTheme: TextTheme(
-          bodyText1: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
-          bodyText2: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+          headline1: TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: Colors.black),
+          headline2: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Color(0xFFA7B0D0)),
+          bodyText1: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+          bodyText2: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFA7B0D0)),
         ),
       ),
       home: BlocProvider(

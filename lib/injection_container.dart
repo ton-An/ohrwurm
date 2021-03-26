@@ -30,20 +30,18 @@ Future<void> init() async {
   String databasesPath = await getDatabasesPath();
   String ohrwurmDbPath = '$databasesPath/orhwurm.db';
 
-  Database db = await openDatabase(ohrwurmDbPath, version: 1,
-      onCreate: (Database db, int version) async {
+  Database db = await openDatabase(ohrwurmDbPath, version: 1, onCreate: (Database db, int version) async {
     // When creating the db, create the table
     await db.execute(
         'CREATE TABLE Songs (id STRING PRIMARY KEY, title STRING, authorName STRING, writerName STRING, albumId STRING, genreId STRING, year INTEGER, trackDuration INTEGER, songFilePath STRING, coverArtPath STRING, isActive BOOL, FOREIGN KEY(albumId) REFERENCES Albums(id), FOREIGN KEY(genreId) REFERENCES Genres(id))');
-    await db
-        .execute('CREATE TABLE Artists (id STRING PRIMARY KEY, name STRING)');
+    await db.execute('CREATE TABLE Artists (id STRING PRIMARY KEY, name STRING)');
     await db.execute(
         'CREATE TABLE SongsArtists (songId STRING, artistId STRING, FOREIGN KEY(songId) REFERENCES Songs(id), FOREIGN KEY(artistId) REFERENCES Artists(id))');
   });
 
-  await db.delete('Songs');
-  await db.delete('SongsArtists');
-  await db.delete('Artists');
+  // await db.delete('Songs');
+  // await db.delete('SongsArtists');
+  // await db.delete('Artists');
 
   // await db.execute(
   //     'CREATE TABLE Songs (id STRING PRIMARY KEY, title STRING, authorName STRING, writerName STRING, albumId STRING, genreId STRING, year INTEGER, trackDuration INTEGER, songFilePath STRING, coverArtPath STRING, isActive BOOL, FOREIGN KEY(albumId) REFERENCES Albums(id), FOREIGN KEY(genreId) REFERENCES Genres(id))');
@@ -64,7 +62,7 @@ Future<void> init() async {
   //* Song
   sl.registerFactory(() => SongsCubit(getSongListUseCase: sl()));
 
-  sl.registerLazySingleton(() => ScanDirectoryForSongs(addSong: sl()));
+  sl.registerLazySingleton(() => ScanDirectoryForSongs(addSong: sl(), songRepository: sl()));
 
   sl.registerLazySingleton(() => AddSong(
         songRepository: sl(),
@@ -73,12 +71,11 @@ Future<void> init() async {
         idGenerator: sl(),
         appPaths: sl(),
       ));
-  sl.registerLazySingleton(() => GetSong(songRepository: sl()));
-  sl.registerLazySingleton(
-      () => GetSongList(songRepository: sl(), getSong: sl()));
 
-  sl.registerLazySingleton<SongRepository>(
-      () => SongRepositoryImpl(songLocalDataSource: sl()));
+  sl.registerLazySingleton(() => GetSong(songRepository: sl()));
+  sl.registerLazySingleton(() => GetSongList(songRepository: sl(), getSong: sl()));
+
+  sl.registerLazySingleton<SongRepository>(() => SongRepositoryImpl(songLocalDataSource: sl()));
 
   sl.registerLazySingleton<SongLocalDataSource>(() => SongLocalDataSourceImpl(
         sqlLocalDataSource: sl(),
@@ -95,19 +92,16 @@ Future<void> init() async {
       ));
   sl.registerLazySingleton(() => GetArtist(artistRepository: sl()));
 
-  sl.registerLazySingleton<ArtistRepository>(
-      () => ArtistRepositoryImpl(artistLocalDataSource: sl()));
+  sl.registerLazySingleton<ArtistRepository>(() => ArtistRepositoryImpl(artistLocalDataSource: sl()));
 
   sl.registerLazySingleton<ArtistLocalDataSource>(
-    () =>
-        ArtistLocalDataSourceImpl(sqlLocalDataSource: sl(), idGenerator: sl()),
+    () => ArtistLocalDataSourceImpl(sqlLocalDataSource: sl(), idGenerator: sl()),
   );
 
   //! Core !//
   sl.registerLazySingleton(() => IdGenerator(uuid: sl()));
   sl.registerLazySingleton(() => AppPaths());
-  sl.registerLazySingleton<SqlLocalDataSource>(
-      () => SqlLocalDataSourceImpl(db: db));
+  sl.registerLazySingleton<SqlLocalDataSource>(() => SqlLocalDataSourceImpl(db: db));
 
   //! External !//
   sl.registerLazySingleton(() => MetadataRetriever());

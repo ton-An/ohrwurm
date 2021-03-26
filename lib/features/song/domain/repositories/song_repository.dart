@@ -37,4 +37,9 @@ abstract class SongRepository {
   ///
   /// Returns a [Failure] if something goes terribly wrong
   Future<Either<Failure, Song>> getSongFromFilePath(String filePath);
+
+  /// Gets the List of [FileSystemEntity]s for a directory
+  ///
+  /// Returns an [OhrwurmFileSystemFailure] if something goes terribly wrong
+  Either<Failure, List<FileSystemEntity>> scanDirectory(Directory directory);
 }

@@ -15,6 +15,7 @@ import 'package:ohrwurm/features/song/data/models/song_meta_data_model.dart';
 import 'package:ohrwurm/features/song/data/models/song_model.dart';
 import 'package:ohrwurm/features/song/domain/entities/song.dart';
 import 'package:ohrwurm/features/song/domain/entities/song_meta_data.dart';
+import 'package:ohrwurm/features/song/domain/usecases/add_song.dart';
 import 'package:ohrwurm/features/sql/data/datasources/sql_local_data_source.dart';
 import 'package:meta/meta.dart';
 import 'package:sqflite/sqflite.dart';
@@ -54,6 +55,11 @@ abstract class SongLocalDataSource {
   ///
   /// Throws a [OhrwurmDatabaseException] if the database can't be accessed and a [NotInDatabaseException] if song can't be found
   Future<Song> getSongFromFilePath(String filePath);
+
+  /// Gets the List of [FileSystemEntity]s for a directory
+  ///
+  /// Throws an [OhrwurmFileSystemException] if something goes terribly wrong
+  List<FileSystemEntity> scanDirectory(Directory directory);
 }
 
 class SongLocalDataSourceImpl extends SongLocalDataSource {
@@ -166,6 +172,14 @@ class SongLocalDataSourceImpl extends SongLocalDataSource {
         return songIds;
     } on DatabaseException {
       throw OhrwurmDatabaseException('5476');
+    }
+  }
+
+  List<FileSystemEntity> scanDirectory(Directory directory) {
+    try {
+      return directory.listSync(recursive: true);
+    } on FileSystemException catch (e) {
+      throw OhrwurmFileSystemException(e.message, e.path);
     }
   }
 }

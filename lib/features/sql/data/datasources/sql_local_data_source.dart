@@ -42,7 +42,8 @@ abstract class SqlLocalDataSource {
   ///
   /// [orderBy] declares how to order the rows, Passing null will use the default sort order, which may be unordered.
   ///
-  /// [limit] limits the number of rows returned by the query.
+  /// [limit] limits the
+  ///  of rows returned by the query.
   ///
   /// [offset] specifies the starting index.
   Future<List<Map<String, Object>>> query(

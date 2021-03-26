@@ -36,38 +36,31 @@ class AddSong extends UseCase<void, AddSongParams> {
 
   @override
   Future<Either<Failure, void>> call(AddSongParams params) async {
-    Either<Failure, Song> getSongFromFilePathEither =
-        await songRepository.getSongFromFilePath(params.songFile.path);
+    Either<Failure, Song> getSongFromFilePathEither = await songRepository.getSongFromFilePath(params.songFile.path);
 
     return getSongFromFilePathEither.fold((l) async {
       if (l is NotInDatabaseFailure) {
-        Either<Failure, SongMetaData> songMetaDataEither =
-            await songRepository.getSongMetaData(params.songFile);
+        Either<Failure, SongMetaData> songMetaDataEither = await songRepository.getSongMetaData(params.songFile);
         return songMetaDataEither.fold((l) {
           print('AddSong - $l');
           return Left(l);
         }, (r) async {
           SongMetaDataModel songMetaDataModel = r;
           print(params.songFile.path);
-          print(songMetaDataModel);
           final String id = idGenerator();
-          final Either<Failure, Song> doesSongIdExistEither =
-              await getSong(GetSongParams(songID: id));
+          final Either<Failure, Song> doesSongIdExistEither = await getSong(GetSongParams(songID: id));
 
           return doesSongIdExistEither.fold((l) async {
             if (l is NotInDatabaseFailure) {
-              String appDirectoryPath =
-                  await appPaths.getAppDocumentsDirectoryPath();
+              String appDirectoryPath = await appPaths.getAppDocumentsDirectoryPath();
 
               if (!await Directory('$appDirectoryPath/coverArt/').exists()) {
                 Directory('$appDirectoryPath/coverArt/').create();
               }
               String coverArtPath = '$appDirectoryPath/coverArt/$id.jpg';
-              (await File(coverArtPath).create())
-                  .writeAsBytesSync(songMetaDataModel.coverArt);
+              (await File(coverArtPath).create()).writeAsBytesSync(songMetaDataModel.coverArt);
 
-              final Either<Failure, void> addSongEither =
-                  await songRepository.addSong(
+              final Either<Failure, void> addSongEither = await songRepository.addSong(
                 SongModel(
                   id: id,
                   title: songMetaDataModel.title,
@@ -77,8 +70,7 @@ class AddSong extends UseCase<void, AddSongParams> {
                   albumName: songMetaDataModel.albumName,
                   genre: songMetaDataModel.genre,
                   year: songMetaDataModel.year,
-                  trackDuration:
-                      Duration(seconds: songMetaDataModel.trackDuration),
+                  trackDuration: Duration(milliseconds: songMetaDataModel.trackDuration),
                   songFilePath: params.songFile.path,
                   coverArtPath: coverArtPath,
                 ),
@@ -89,15 +81,13 @@ class AddSong extends UseCase<void, AddSongParams> {
 
                 for (String artistName in songMetaDataModel.artists) {
                   print(artistName);
-                  final addArtistEither =
-                      await addArtist(AddArtistParams(artistName: artistName));
+                  final addArtistEither = await addArtist(AddArtistParams(artistName: artistName));
                   print(addArtistEither);
                   // if (addArtistEither.isLeft()) return addArtistEither;
                   bool failed = false;
                   addArtistEither.fold((l) async {
                     if (l is ArtistAlreadyExistsFailure)
-                      await songRepository.addToSongsArtistTable(
-                          id, l.artistId);
+                      await songRepository.addToSongsArtistTable(id, l.artistId);
                     else
                       failed = true;
                   }, (r) async {

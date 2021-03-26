@@ -79,4 +79,13 @@ class SongRepositoryImpl extends SongRepository {
       return Left(NotInDatabaseFailure(e.message));
     }
   }
+
+  @override
+  Either<Failure, List<FileSystemEntity>> scanDirectory(Directory directory) {
+    try {
+      return Right(songLocalDataSource.scanDirectory(directory));
+    } on OhrwurmFileSystemException catch (e) {
+      return Left(OhrwurmFileSystemFailure(e.message, e.path));
+    }
+  }
 }

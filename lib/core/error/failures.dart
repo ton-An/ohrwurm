@@ -48,3 +48,9 @@ class NoMoreResultsFailure extends Failure {
 class NoResultsFailure extends Failure {
   NoResultsFailure(String message) : super(message);
 }
+
+class OhrwurmFileSystemFailure extends Failure {
+  final String path;
+
+  OhrwurmFileSystemFailure(String message, this.path) : super(message);
+}

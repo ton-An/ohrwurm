@@ -34,8 +34,7 @@ class SongModel extends Song {
   /// Converts a Map to a [SongModel]
   factory SongModel.fromMap(Map<String, dynamic> songMap) {
     List<ArtistModel> artists = songMap['artists']
-        .map<ArtistModel>(
-            (Map<String, dynamic> artistMap) => ArtistModel.fromMap(artistMap))
+        .map<ArtistModel>((Map<String, dynamic> artistMap) => ArtistModel.fromMap(artistMap))
         .toList();
 
     return SongModel(
@@ -47,7 +46,7 @@ class SongModel extends Song {
       albumName: songMap['albumName'],
       genre: songMap['genre'],
       year: songMap['year'],
-      trackDuration: Duration(seconds: songMap['trackDuration'].round()),
+      trackDuration: Duration(milliseconds: songMap['trackDuration'].round()),
       songFilePath: songMap['songFilePath'],
       coverArtPath: songMap['coverArtPath'],
     );
@@ -62,10 +61,7 @@ class SongModel extends Song {
       'title': super.title,
       'artists': super.artists == null
           ? null
-          : super
-              .artists
-              .map((Artist artist) => {'id': artist.id, 'name': artist.name})
-              .toList(),
+          : super.artists.map((Artist artist) => {'id': artist.id, 'name': artist.name}).toList(),
       'authorName': super.authorName,
       'writerName': super.writerName,
       'albumName': super.albumName,

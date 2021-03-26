@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -18,6 +20,8 @@ class MockArtistLocalDataSource extends Mock implements ArtistLocalDataSource {}
 class MockIdGenerator extends Mock implements IdGenerator {}
 
 class MockMetadataRetriever extends Mock implements MetadataRetriever {}
+
+class MockDirectory extends Mock implements Directory {}
 
 main() {
   SongLocalDataSourceImpl songLocalDataSourceImpl;
@@ -374,6 +378,29 @@ main() {
 
       // assert
       expect(call(), throwsA(isA<NotInDatabaseException>()));
+    });
+  });
+
+  group('scanDirectoryForSongs()', () {
+    MockDirectory mockDirectory;
+
+    setUp(() {
+      mockDirectory = MockDirectory();
+    });
+    test(
+        'should call listSync on the directory and return a List of [FileSystemEntity]s',
+        () {
+      // arrange
+      when(mockDirectory.listSync(recursive: anyNamed('recursive')))
+          .thenReturn([tSongFile]);
+
+      // act
+      final result = songLocalDataSourceImpl.scanDirectory(mockDirectory);
+
+      // assert
+      expect(result, [tSongFile]);
+      verify(mockDirectory.listSync(recursive: true));
+      verifyNoMoreInteractions(mockDirectory);
     });
   });
 }

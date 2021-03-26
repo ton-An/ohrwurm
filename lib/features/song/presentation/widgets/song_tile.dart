@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:marquee_text/marquee_text.dart';
 import 'package:ohrwurm/core/constants.dart';
 import 'package:ohrwurm/features/artist/domain/entities/artist.dart';
 import 'package:ohrwurm/features/music_player/presentation/cubit/music_player_cubit/music_player_cubit.dart';
@@ -18,37 +19,45 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double cdRadius = 30;
     return InkWell(
       onTap: () async {
         print('asdsadas - $song');
         await BlocProvider.of<MusicPlayerCubit>(context)
             .playSong(song, BlocProvider.of<MusicPlayerSizeCubit>(context));
       },
-      borderRadius: standardRadius,
+      borderRadius: kStandardRadius,
       child: Container(
         key: _key,
         height: 80,
-        padding: EdgeInsets.symmetric(horizontal: standardPadding / 2),
+        padding: EdgeInsets.symmetric(horizontal: kStandardPadding / 2),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CD(
-              radius: 30,
+              radius: cdRadius,
               coverArtPath: song.coverArtPath,
             ),
             SizedBox(
-              width: standardPadding,
+              width: kStandardPadding,
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  song.title,
-                  style: Theme.of(context).primaryTextTheme.bodyText1,
+                Container(
+                  width: MediaQuery.of(context).size.width -
+                      kStandardPadding * 2 -
+                      kStandardPadding -
+                      cdRadius * 2,
+                  child: MarqueeText(
+                    text: song.title + '          ',
+                    speed: 25,
+                    style: Theme.of(context).primaryTextTheme.bodyText1,
+                  ),
                 ),
                 SizedBox(
-                  height: smallPadding,
+                  height: kSmallPadding,
                 ),
                 if (song.artists.isNotEmpty)
                   Row(

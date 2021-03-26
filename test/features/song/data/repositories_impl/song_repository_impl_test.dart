@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -247,6 +249,36 @@ main() {
 
       // assert
       expect(result, Left(NotInDatabaseFailure('Failure')));
+    });
+  });
+
+  group('scanDirectory()', () {
+    test(
+        'should get a List of [FileEntity]s from the [SongLocalDataSource] and return it',
+        () {
+      // arrange
+      when(mockSongLocalDataSource.scanDirectory(any)).thenReturn([tSongFile]);
+
+      // act
+      final result = mockSongLocalDataSource.scanDirectory(tDirectory);
+
+      // assert
+      expect(result, [tSongFile]);
+      verify(mockSongLocalDataSource.scanDirectory(tDirectory));
+      verifyNoMoreInteractions(mockSongLocalDataSource);
+    });
+    test(
+        'should return an [OhrwurmFileSystemFailure] on an [OhrwurmFileSystemException]',
+        () {
+      // arrange
+      when(mockSongLocalDataSource.scanDirectory(any))
+          .thenThrow(OhrwurmFileSystemException('', ''));
+
+      // act
+      final result = mockSongLocalDataSource.scanDirectory(tDirectory);
+
+      // assert
+      expect(result, Left(OhrwurmFileSystemFailure('', '')));
     });
   });
 }

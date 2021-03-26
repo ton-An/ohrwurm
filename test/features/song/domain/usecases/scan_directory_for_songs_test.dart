@@ -1,41 +1,59 @@
 import 'dart:io';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:ohrwurm/features/song/domain/repositories/song_repository.dart';
+import 'package:ohrwurm/features/song/domain/usecases/add_song.dart';
 import 'package:ohrwurm/features/song/domain/usecases/scan_directory_for_songs.dart';
+
+import '../../../../fixtures/song_fixtures.dart';
 
 class MockDirectory extends Mock implements Directory {}
 
+class MockAddSong extends Mock implements AddSong {}
+
+class MockSongRepository extends Mock implements SongRepository {}
+
 main() {
   ScanDirectoryForSongs scanDirectoryForSongs;
-  MockDirectory mockDirectory;
+  MockAddSong mockAddSong;
+  MockSongRepository mockSongRepository;
 
   setUp(() {
-    mockDirectory = MockDirectory();
-    scanDirectoryForSongs = ScanDirectoryForSongs();
+    mockAddSong = MockAddSong();
+    mockSongRepository = MockSongRepository();
+    scanDirectoryForSongs = ScanDirectoryForSongs(
+        addSong: mockAddSong, songRepository: mockSongRepository);
   });
 
-  setUp(() {
-    when(mockDirectory.list())
-        .thenAnswer((realInvocation) => Stream.value(File('')));
-  });
-  test('should call list on directory', () async {
+  test(
+      'should get a List of [FileSystemEntity]s from the [SongLocalRepository]',
+      () async {
     // arrange
+    when(mockSongRepository.scanDirectory(any))
+        .thenAnswer((realInvocation) => Right([tSongFile]));
 
     // act
-    await scanDirectoryForSongs(Params(directory: mockDirectory));
+    await scanDirectoryForSongs(ScanDirectoryParams(directory: tDirectory));
 
     // assert
-    verify(mockDirectory.list(recursive: true));
+    verify(mockSongRepository.scanDirectory(tDirectory));
+    verifyNoMoreInteractions(mockSongRepository);
   });
 
-  test('should call listen on the direcory stream', () async {
+  test('should relay [Failure]s', () async {
     // arrange
+    when(mockSongRepository.scanDirectory(any))
+        .thenAnswer((realInvocation) => Left(tUnidentifiableFailure));
 
     // act
-    await scanDirectoryForSongs(Params(directory: mockDirectory));
+    final result =
+        await scanDirectoryForSongs(ScanDirectoryParams(directory: tDirectory));
 
     // assert
-    verify(mockDirectory.list().listen(any));
+    expect(result, Left(tUnidentifiableFailure));
+    verify(mockSongRepository.scanDirectory(tDirectory));
+    verifyNoMoreInteractions(mockSongRepository);
   });
 }

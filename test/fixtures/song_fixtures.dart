@@ -124,6 +124,8 @@ final Map<String, String> tSongsArtist = {
 
 final File tSongFile = File('songFilePath');
 
+final Directory tDirectory = Directory('directoryPath');
+
 final Metadata tMetadata = Metadata(
   albumName: tSong.albumName,
   authorName: tSong.authorName,

@@ -16,14 +16,12 @@ class SongsCubit extends Cubit<SongsState> {
     final songListEither =
         await getSongListUseCase(GetSongListParams(page: page));
     songListEither.fold((l) {
-      print('asdsaddas');
       if (l is NoMoreResultsFailure) {
         emit(SongsLoaded(songs: []));
       } else {
         emit(SongsError(message: '${l.message} - $l'));
       }
     }, (r) {
-      print('dfhdsd');
       for (Song song in r) print(song);
 
       emit(SongsLoaded(songs: r));
